@@ -60,5 +60,63 @@
 
 
 
+# 모델 아키텍처
+
+모델은 감정 인식을 위해 설계되었으며, MobileNet을 백본으로 사용. 모델의 각 레이어의 입력 및 출력 형태는 아래와 같음.
+
+## 모델 요약
+
+```plaintext
+__________________________________________________________________________________________________
+ Layer (type)                Output Shape                 Param #   Connected to                  
+==================================================================================================
+ universal_input (InputLaye  [(None, 48, 48, 3)]          0         []                            
+ r)                                                                                               
+                                                                                                  
+ resize (Resizing)           (None, 224, 224, 3)          0         ['universal_input[0][0]']     
+                                                                                                  
+ augmentation (Sequential)   (None, 224, 224, 3)          0         ['resize[0][0]']              
+                                                                                                  
+ tf.math.truediv_11 (TFOpLa  (None, 224, 224, 3)          0         ['augmentation[0][0]']        
+ mbda)                                                                                            
+                                                                                                  
+ tf.math.subtract_11 (TFOpL  (None, 224, 224, 3)          0         ['tf.math.truediv_11[0][0]']  
+ ambda)                                                                                           
+                                                                                                  
+ base_model (Functional)     (None, 14, 14, 512)          821952    ['tf.math.subtract_11[0][0]'] 
+                                                                                                  
+ patch_extraction (Sequenti  (None, 2, 2, 256)            272128    ['base_model[0][0]']          
+ al)                                                                                              
+                                                                                                  
+ spatial_dropout2d_1 (Spati  (None, 2, 2, 256)            0         ['patch_extraction[0][0]']    
+ alDropout2D)                                                                                     
+                                                                                                  
+ gap (GlobalAveragePooling2  (None, 256)                  0         ['spatial_dropout2d_1[0][0]'] 
+ D)                                                                                               
+                                                                                                  
+ dropout_12 (Dropout)        (None, 256)                  0         ['gap[0][0]']                 
+                                                                                                  
+ pre_classification (Sequen  (None, 32)                   8352      ['dropout_12[0][0]']          
+ tial)                                                                                            
+                                                                                                  
+ attention (Attention)       (None, 32)                   1         ['pre_classification[0][0]',  
+                                                                     'pre_classification[0][0]']  
+                                                                                                  
+ dropout_13 (Dropout)        (None, 32)                   0         ['attention[0][0]']           
+                                                                                                  
+ classification_head (Dense  (None, 7)                    231       ['dropout_13[0][0]']          
+ )                                                                                                
+                                                                                                  
+==================================================================================================
+Total params: 1102664 (4.21 MB)
+Trainable params: 280648 (1.07 MB)
+Non-trainable params: 822016 (3.14 MB)
+__________________________________________________________________________________________________
+
+
+모델의 pre_classification 레이어는 256차원의 벡터를 32차원의 임베딩 벡터로 변환
+
+모델의 최종 레이어인 classification_head는 주어진 입력 이미지에 대해 감정을 예측. 7개의 감정 클래스 중 하나로 분류.
+
 
 
